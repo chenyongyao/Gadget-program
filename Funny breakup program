@@ -1,0 +1,83 @@
+'''
+终端执行（进行编译成可执行文件.exe到本地或其他电脑也可以执行）：pyinstaller --onefile --noconsole --add-data "分手.jpg;." --add-data "滚蛋.jpg;." 分手02.py
+效果（类似于搞怪辞职程序）：点击文件后弹出“分手”窗口，当鼠标移动到“不同意”按钮时按钮会自动移动导致无法点击“不同意”按钮，如果直接X掉会弹出“只能同意才能关闭窗口”的窗口，只能点击“同意”；
+    点击“同意”后弹出新窗口显示“你不配拥有姐这么好的人”，只有“我同意”的按钮；点击“我同意”后显示'滚蛋.jpg'图片再退出程序
+时间：2023年10月25日
+'''
+
+import random
+import tkinter as tk
+from tkinter import messagebox
+from PIL import Image, ImageTk
+import sys
+import os
+
+def closeWindow():  # 接X掉会弹出“只能同意才能关闭窗口”的窗口
+    top = tk.Toplevel(root)
+    top.title("同意提示")  # 窗口标题，在顶部左侧
+    label = tk.Label(top, text="只有点同意才能关闭窗口啊~")
+    label.pack()
+    btn = tk.Button(top, text="关闭", command=top.destroy)
+    btn.pack()
+
+def agree():  # 显示“你不配拥有姐这么好的人”，只有“我同意”的按钮
+    top = tk.Toplevel(root)
+    top.geometry("500x150+{}+{}".format(int((width) / 2), int((height) / 2)))
+    top.title("小子，我要分手。") # 窗口标题，在顶部左侧
+    label = tk.Label(top, text="你不配拥有姐这么好的人", font=("华文行楷", 20), fg="red")  # 窗口页面文字，字体：华文行楷；大小：20；颜色：red
+    label.pack()
+    btn = tk.Button(top, text="我同意", width=6, height=1, command=lambda: show_new_image_and_exit(top))
+    btn.pack()
+
+def show_new_image_and_exit(top):  # 点击“我同意”后显示'滚蛋.jpg'图片再退出程序
+    top.destroy()  # 关闭 "我同意" 窗口
+    # 创建一个新窗口来显示新图片
+    new_image_path = os.path.join(base_path, '滚蛋.jpg')
+    new_load = Image.open(new_image_path).resize((300, 310))
+    new_render = ImageTk.PhotoImage(new_load)
+    new_window = tk.Toplevel(root)
+    new_window.title("滚蛋吧！") # 窗口标题，在顶部左侧
+    new_label = tk.Label(new_window, image=new_render)
+    new_label.image = new_render
+    new_label.pack()
+    # 延迟关闭新窗口，然后关闭主窗口
+    new_window.after(2000, lambda: exit_application(new_window))  # 2000为延迟2秒
+
+def exit_application(window):
+    window.destroy()  # 关闭新图片窗口
+    root.destroy()  # 关闭主窗口
+
+def disagree():
+    B2.place_forget()
+    B2.place(x=random.randint(150, 500), y=random.randint(150, 500))
+
+if getattr(sys, 'frozen', False):
+    # Running as a bundled executable
+    base_path = sys._MEIPASS
+else:
+    # Running as a script
+    base_path = os.path.abspath(".")
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    root.title('小子，我要分手。')  # 窗口标题，在顶部左侧
+    title_label = tk.Label(root, text="小子，我要分手。", font=("华文行楷", 25), fg="red")  # 窗口页面文字，字体：华文行楷；大小：25；颜色：red
+    title_label.pack(pady=20)
+    width = 600
+    height = 650
+    root.resizable(width=False, height=True)
+    root.geometry('600x600')
+    root.protocol("WM_DELETE_WINDOW", closeWindow)
+
+    image_path = os.path.join(base_path, '分手.jpg')
+    load = Image.open(image_path).resize((300, 310))
+    render = ImageTk.PhotoImage(load)
+    L2 = tk.Label(root, image=render)
+    L2.image = render
+    L2.place(x=150, y=100)
+    B1 = tk.Button(root, text='同意', command=agree)
+    B1.place(x=155, y=420)
+    B2 = tk.Button(root, text='不同意', command=disagree)
+    B2.place(x=400, y=420)
+
+    root.mainloop()
